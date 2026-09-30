@@ -29,7 +29,12 @@ public class GameManager : MonoBehaviour
     
 
     [SerializeField]
-    private int requiredCollectibles = 3;
+    private int requiredCollectibles = 5;
+    
+    [SerializeField]
+    private CanvasGroup StartPanel;
+    
+    
     
     
     private void Start()
@@ -42,8 +47,13 @@ public class GameManager : MonoBehaviour
         YouLoseGoalUI.alpha = 0;
         
         
-        GameplayRoot.SetActive(true);
+        // ↓↓↓ Show Panel, Freeze Player ↓↓↓
+        SetUIState(StartPanel, enabled: true);
+        SetPlayerGameplay(enable: false);
+       
+
         
+        GameplayRoot.SetActive(true);
         UpdateCollectiblesText();
     }
     
@@ -61,7 +71,8 @@ public class GameManager : MonoBehaviour
 
     private void UpdateCollectiblesText()
     {
-        collectiblesText.text = ("Collectibles:" + currentCollectibles + "/" + requiredCollectibles);
+        //collectiblesText.text = ("Collectibles:" + currentCollectibles + "/" + requiredCollectibles);
+        collectiblesText.text = ("Cats Following You:" + currentCollectibles + "/" + requiredCollectibles);
     }
 
     public void LoseGame()
@@ -116,12 +127,14 @@ public class GameManager : MonoBehaviour
 
         foreach (Collectible c  in collectibles)
         {
-            c.gameObject.SetActive(true);
+            //c.gameObject.SetActive(true);
+            c.ResetCat();
         }
         
         
         SetUIState(YouWinGoalUI, enabled: false);
         SetUIState(YouLoseGoalUI, enabled: false);
+        SetUIState(StartPanel, enabled: false); 
         
        
     }

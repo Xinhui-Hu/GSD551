@@ -23,10 +23,19 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private LayerMask groundLayer;
     
+    private float knockbackTimer = 0f;
+
+    [SerializeField]
+    private float knockbackDuration = 0.3f;
     
+    [SerializeField]
+    private float jumpBoostDuration = 3f;
+   
     private float horizontalInput;
     private bool isGrounded;
     private bool jumpPressed;
+    private float jumpBoostTimer = 0f;
+
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -42,17 +51,34 @@ public class PlayerMovement : MonoBehaviour
         {
             jumpPressed = true;
         }
+        
+        // ↓↓↓ 新增 ↓↓↓
+        if (jumpBoostTimer > 0)
+        {
+            jumpBoostTimer -= Time.deltaTime;
+        }
+        // ↑↑↑ 新增结束 ↑↑↑
     }
 
     private void FixedUpdate()
     {
         CheckGround();
-        Move(horizontalInput);
+
+        // ↓↓↓ 改动：knockback 期间不覆盖速度 ↓↓↓
+        if (knockbackTimer > 0)
+        {
+            knockbackTimer -= Time.fixedDeltaTime;
+        }
+        else
+        {
+            Move(horizontalInput);
+        }
+        // ↑↑↑ 改动结束 ↑↑↑
 
         if (jumpPressed)
         {
             Jump();
-            jumpPressed = false;//next time will be false every frame 
+            jumpPressed = false;
         }
         
     }
@@ -91,8 +117,10 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
         
+        float currentJumpSpeed = jumpBoostTimer > 0 ? jumpSpeed * 2f : jumpSpeed;
         Vector2 jumpVelocity = new Vector2(playerRigidbody.linearVelocityX, jumpSpeed);
         playerRigidbody.linearVelocity = jumpVelocity;
+        
     }
 
     private void CheckGround()
@@ -101,7 +129,19 @@ public class PlayerMovement : MonoBehaviour
         isGrounded = detectedGround != null; //the same as if-else, good for detect, use if-else if the reference is important)
         
     }
-
     
+    // ↓↓↓ 新增方法 ↓↓↓
+    public void ApplyKnockback(Vector2 force)
+    {
+        playerRigidbody.linearVelocity = Vector2.zero;
+        playerRigidbody.AddForce(force, ForceMode2D.Impulse);
+        knockbackTimer = knockbackDuration;
+    }
+    // ↑↑↑ 新增结束 ↑↑↑
+    
+    public void ApplyJumpBoost()
+    {
+        jumpBoostTimer = jumpBoostDuration;
+    }
     
 }
